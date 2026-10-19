@@ -1,0 +1,36 @@
+# kbuild:4 — clang 18 + pahole, matching the stock RMX3771 kernel build
+#
+# WHY kbuild:3 was not enough:
+#   The stock kernel has CONFIG_DEBUG_INFO_BTF=y (pahole 1.25). Without pahole
+#   installed, `make olddefconfig` silently DROPPED it, which changed struct
+#   layouts and therefore the module_layout CRC:
+#       device:        0x4e276f37
+#       our clang:     0x6500052f   (BTF off)
+#       our gcc:       0x7b09c576
+#   A module whose module_layout CRC does not match is refused by the loader
+#   with "disagrees about version of symbol module_layout".
+#
+# The AOSP clang tree is mounted at /clang (too big to COPY into the image).
+
+FROM debian:bookworm-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        bc bison flex \
+        libssl-dev libelf-dev libncurses-dev \
+        cpio kmod rsync file \
+        python3 python3-pip \
+        wget curl xz-utils zstd git \
+        ca-certificates \
+        pahole \
+        dwarves \
+        libdw-dev \
+        gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pahole --version
+
+WORKDIR /w/src
+CMD ["/bin/bash"]

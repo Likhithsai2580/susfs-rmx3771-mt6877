@@ -1,0 +1,10 @@
+# build outputs
+*.o
+*.mod
+*.mod.c
+*.cmd
+.tmp_*
+# large local trees
+aosp-clang/
+susfs_lkm_src/
+kbuild/
